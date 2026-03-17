@@ -4,11 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Gestión Spence — M1</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-graph-client/3.0.7/graph-js-sdk.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-authentication-library/2.38.3/msal-browser.min.js"></script>
 <style>
 :root{
-  --bg:#f5f4f0;--surface:#ffffff;--surface2:#eeede8;--border:#d8d6ce;
+  --bg:#f5f4f0;--surface:#fff;--surface2:#eeede8;--border:#d8d6ce;
   --text:#1a1a18;--text2:#6b6a65;--text3:#9e9d98;
   --accent:#c8430a;--blue:#1a4fa0;--green:#1a6e3c;--amber:#a06010;--red:#a02020;
   --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
@@ -16,8 +16,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
-
-/* LAYOUT */
 .shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
 .sidebar{background:var(--text);color:#f5f4f0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sidebar-logo{padding:20px 20px 16px;border-bottom:0.5px solid rgba(255,255,255,0.1)}
@@ -26,7 +24,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .logo-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px}
 .sidebar-user{padding:12px 20px;border-bottom:0.5px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px}
 .user-avatar{width:28px;height:28px;border-radius:50%;background:rgba(200,67,10,0.4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0}
-.user-info{flex:1;min-width:0}
 .user-name{font-size:11px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-role{font-size:9px;color:rgba(255,255,255,0.4);font-family:var(--mono)}
 .nav-section{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;text-transform:uppercase;padding:14px 20px 5px}
@@ -36,44 +33,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .nav-badge{margin-left:auto;font-size:9px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:10px;font-family:var(--mono)}
 .sidebar-footer{padding:14px 20px;border-top:0.5px solid rgba(255,255,255,0.08);margin-top:auto}
 .sidebar-date{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,0.25)}
-
 .main{overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .topbar{background:var(--surface);border-bottom:0.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:10}
 .topbar-title{font-size:15px;font-weight:500}
 .topbar-actions{display:flex;gap:8px;align-items:center}
 .content{padding:20px 24px;flex:1;overflow-y:auto}
-
-/* BUTTONS */
 .btn{font-family:var(--font);font-size:12px;padding:6px 14px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:all 0.15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .btn:hover{background:var(--surface2)}
 .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn-accent:hover{opacity:0.88}
 .btn-dark{background:var(--text);color:#fff;border-color:var(--text)}
-.btn-dark:hover{opacity:0.85}
 .btn-sm{font-size:11px;padding:4px 10px}
-
-/* CARDS */
 .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:14px 16px}
 .card-title{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px}
-
-/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stat{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:14px}
 .stat-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:5px}
 .stat-value{font-size:26px;font-weight:600;line-height:1;font-family:var(--mono)}
 .stat-sub{font-size:10px;color:var(--text2);margin-top:3px}
-
-/* TWO COL */
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-
-/* BAR */
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .bar-label{font-size:11px;color:var(--text2);width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-track{flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
 .bar-pct{font-family:var(--mono);font-size:10px;color:var(--text2);width:30px;text-align:right}
-
-/* TASKS */
 .task-list{display:flex;flex-direction:column;gap:6px}
 .task-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:10px 13px;display:flex;align-items:flex-start;gap:10px;transition:border-color 0.15s;cursor:pointer}
 .task-card:hover{border-color:#aaa8a0}
@@ -86,11 +69,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .task-title.done{text-decoration:line-through;color:var(--text3)}
 .task-meta{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .badge{font-size:9px;padding:2px 7px;border-radius:20px;font-weight:500;font-family:var(--mono)}
-.task-actions{display:flex;gap:4px;flex-shrink:0;align-items:flex-start}
-.icon-btn{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:4px;line-height:1}
+.icon-btn{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:4px}
 .icon-btn:hover{color:var(--text);background:var(--surface2)}
-
-/* BADGES */
 .area-op{background:#deeaf8;color:#1a3d7a}.area-cont{background:#eceafc;color:#3a2e8a}
 .area-seg{background:#fce8e8;color:#7a1a1a}.area-coord{background:#d8f0e6;color:#0d4e2a}
 .area-kpi{background:#fef0d8;color:#5a3a08}.area-mant{background:#e8e6e0;color:#3a3830}
@@ -104,12 +84,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .type-continua{background:#deeaf8;color:#1a3d7a}.type-turno{background:#fef0d8;color:#5a3a08}
 .type-puntual{background:#e8e6e0;color:#3a3830}.type-sin_asignar{background:#e8e6e0;color:#3a3830}
 .type-escalada{background:#fef0d8;color:#7a4808}.type-tercero{background:#eceafc;color:#3a2e8a}
-
-/* CONTROLS */
 .controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
 .filter-select{font-family:var(--font);font-size:12px;padding:5px 8px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--surface);color:var(--text);height:30px;cursor:pointer}
-
-/* FORM */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:var(--rl);padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
@@ -121,8 +97,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .form-input{font-family:var(--font);font-size:13px;padding:7px 10px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--surface);color:var(--text);width:100%}
 .form-input:focus{outline:none;border-color:#aaa8a0}
 .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-
-/* LOG */
 .log-item{display:flex;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--surface2)}
 .log-item:last-child{border-bottom:none}
 .log-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;background:#deeaf8;color:#1a3d7a}
@@ -130,71 +104,69 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .log-author{font-size:11px;font-weight:500}
 .log-action{font-size:11px;color:var(--text2);line-height:1.4}
 .log-time{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px}
-.log-evidence{font-size:11px;color:var(--blue);margin-top:3px;text-decoration:underline;cursor:pointer}
-
-/* PERSON CARD */
+.log-evidence{font-size:11px;color:var(--blue);margin-top:3px;cursor:pointer;text-decoration:underline}
 .person-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:12px 14px;margin-bottom:8px}
 .person-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;flex-shrink:0}
-
-/* PROGRESS */
 .prog-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:4px}
 .prog-fill{height:100%;border-radius:3px;background:var(--blue);transition:width 0.5s}
-
-/* HANDOVER */
-.handover-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
-.handover-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:0.5px solid var(--border)}
-
-/* ALERT */
 .alert-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--r);margin-bottom:5px}
 .alert-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px}
-
-/* EMPTY */
 .empty{text-align:center;padding:2.5rem;color:var(--text3);font-size:12px}
-
-/* LOADING */
-.loading{display:flex;align-items:center;gap:10px;padding:2rem;color:var(--text2);font-size:13px}
-.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+.loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:4rem;color:var(--text2)}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:var(--r);font-size:12px;z-index:999;opacity:0;transition:opacity 0.2s;pointer-events:none}
 .toast.show{opacity:1}
-
-/* REPORT MODAL */
-.report-content{font-size:12px;line-height:1.7;white-space:pre-wrap;background:var(--bg);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:11px;max-height:55vh;overflow-y:auto}
-
-/* TURNO BADGE */
-.turno-a{background:#deeaf8;color:#1a3d7a}
-.turno-b{background:#fef0d8;color:#5a3a08}
-.turno-4x3{background:#e8e6e0;color:#3a3830}
-
-@media(max-width:768px){
-  .shell{grid-template-columns:1fr}
-  .sidebar{display:none}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .two-col{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr}
-  .content{padding:14px}
-}
+.report-content{font-size:11px;line-height:1.7;white-space:pre-wrap;background:var(--bg);border-radius:var(--r);padding:14px;font-family:var(--mono);max-height:55vh;overflow-y:auto}
+/* Login screen */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.login-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:32px;max-width:360px;width:100%;text-align:center}
+.login-logo{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
+.login-title{font-size:20px;font-weight:600;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text2);margin-bottom:24px;line-height:1.5}
+.login-btn{width:100%;padding:10px;font-size:13px;border-radius:var(--r);border:0.5px solid var(--border);background:var(--text);color:#fff;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px}
+.login-btn:hover{opacity:0.88}
+.login-error{font-size:11px;color:var(--red);margin-top:12px;padding:8px;background:#fce8e8;border-radius:var(--r);display:none}
+.mode-indicator{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:20px;margin-left:8px}
+.mode-live{background:#d8f0e6;color:#0d4e2a}
+.mode-demo{background:#fef0d8;color:#5a3a08}
+@media(max-width:768px){.shell{grid-template-columns:1fr}.sidebar{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.content{padding:14px}}
 </style>
 </head>
 <body>
 
-<!-- MSAL script for Microsoft auth -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-graph-client/3.0.7/graph-js-sdk.min.js"></script>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Enaex · Faena Spence</div>
+    <div class="login-title">Gestión Contrato</div>
+    <div class="login-sub">Inicia sesión con tu cuenta Microsoft de Enaex para acceder al sistema de gestión.</div>
+    <button class="login-btn" onclick="signIn()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="13" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="13" width="10" height="10" fill="#00a4ef"/><rect x="13" y="13" width="10" height="10" fill="#ffb900"/></svg>
+      Iniciar sesión con Microsoft
+    </button>
+    <button class="login-btn" onclick="demoMode()" style="margin-top:10px;background:var(--surface);color:var(--text);border-color:var(--border)">
+      Entrar en modo demo
+    </button>
+    <div class="login-error" id="loginError"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:16px;line-height:1.5">
+      Si el login Microsoft falla, usa modo demo.<br/>Contacta al administrador para registrar tu cuenta.
+    </div>
+  </div>
+</div>
 
-<div class="shell">
-  <!-- SIDEBAR -->
+<!-- APP SHELL (hidden until login) -->
+<div id="appShell" class="shell" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-tag">Enaex · Faena Spence</div>
       <div class="logo-title">Gestión<br>Contrato</div>
       <div class="logo-sub">M1 · Tareas y turnos</div>
     </div>
-    <div class="sidebar-user" id="sidebarUser">
+    <div class="sidebar-user">
       <div class="user-avatar" id="userAvatar">?</div>
-      <div class="user-info">
+      <div style="flex:1;min-width:0">
         <div class="user-name" id="userName">Cargando...</div>
         <div class="user-role" id="userRole">—</div>
       </div>
@@ -207,8 +179,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
       <div class="nav-item" onclick="nav('sin_asignar',this)">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Sin asignar
-        <span class="nav-badge" id="badge-sin">0</span>
+        Sin asignar <span class="nav-badge" id="badge-sin">0</span>
       </div>
       <div class="nav-item" onclick="nav('mis_tareas',this)">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 13c0-2.76 2.24-4 5-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10 10l1.5 1.5L14 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -220,8 +191,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
       <div class="nav-item" onclick="nav('terceros',this)">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M2 5l6 4 6-4" stroke="currentColor" stroke-width="1.2"/></svg>
-        Externos
-        <span class="nav-badge" id="badge-ext">0</span>
+        Externos <span class="nav-badge" id="badge-ext">0</span>
       </div>
       <div class="nav-section">Equipo</div>
       <div class="nav-item" onclick="nav('equipo',this)">
@@ -241,13 +211,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1 4l7 5 7-5" stroke="currentColor" stroke-width="1.2"/></svg>
         Correos seguimiento
       </div>
+      <div class="nav-item" onclick="signOut()" style="margin-top:auto">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cerrar sesión
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-date" id="sidebarDate"></div>
+      <div id="modeIndicator" class="mode-indicator mode-demo" style="margin-top:6px;display:inline-block">demo</div>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div class="topbar-title" id="topbarTitle">Dashboard</div>
@@ -257,7 +231,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
     </div>
     <div class="content" id="mainContent">
-      <div class="loading"><div class="spinner"></div>Conectando con SharePoint...</div>
+      <div class="loading"><div class="spinner"></div><span>Cargando datos...</span></div>
     </div>
   </div>
 </div>
@@ -341,7 +315,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-<!-- TASK DETAIL MODAL -->
+<!-- DETAIL MODAL -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:620px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
@@ -359,16 +333,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div class="card" style="margin-bottom:12px">
       <div class="card-title">Historial de acciones</div>
-      <div id="detailLog" style="max-height:220px;overflow-y:auto"></div>
+      <div id="detailLog" style="max-height:200px;overflow-y:auto"></div>
     </div>
     <div class="card">
       <div class="card-title">Registrar acción</div>
       <div class="form-row" style="margin-bottom:10px">
         <div class="form-group">
           <span class="form-label">Tipo de acción</span>
-          <select class="form-input" id="logAction">
+          <select class="form-input" id="logAction" onchange="onLogActionChange()">
             <option value="comentario">Comentario</option>
-            <option value="avance">Actualizar avance</option>
+            <option value="avance">Actualizar avance %</option>
             <option value="evidencia_link">Link a evidencia</option>
             <option value="escalamiento">Escalar tarea</option>
             <option value="cierre">Cerrar tarea</option>
@@ -416,7 +390,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const SITE_URL = 'https://empresassk.sharepoint.com/sites/YerkoPavez';
-const API_BASE = `${SITE_URL}/_api/lists/getbytitle`;
+const TENANT_ID = 'common'; // Se ajusta automáticamente con el login de Microsoft
+const CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e'; // Azure AD public client para SPO
+const SCOPES = [`${SITE_URL}/AllSites.Write`];
+
+// MSAL config
+const msalConfig = {
+  auth: {
+    clientId: CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
+    redirectUri: 'https://yerkopavez.github.io/spence-gestion/'
+  },
+  cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false }
+};
+
+let msalInstance = null;
+let accessToken = null;
+let isDemo = false;
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const AREAS = {
@@ -430,429 +420,278 @@ const BARCOLORS = ['#1a4fa0','#5a42b8','#1a6e3c','#a06010','#a02060','#6a6860','
 const AVATARBG = ['#deeaf8','#eceafc','#d8f0e6','#fef0d8','#fce6f0','#e4f2d0'];
 const AVATARTX = ['#1a3d7a','#3a2e8a','#0d4e2a','#5a3a08','#5a1a3a','#2a4e10'];
 
-let tasks = [], users = [], logs = [], currentUser = null, currentView = 'dashboard', activeTaskId = null;
+let tasks = [], logs = [], currentUser = null, currentView = 'dashboard', activeTaskId = null;
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function initMSAL() {
+  try {
+    msalInstance = new msal.PublicClientApplication(msalConfig);
+    await msalInstance.initialize();
+    const resp = await msalInstance.handleRedirectPromise();
+    if (resp) { await onLoginSuccess(resp); return; }
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      try {
+        const silent = await msalInstance.acquireTokenSilent({ scopes: SCOPES, account: accounts[0] });
+        await onLoginSuccess(silent);
+      } catch(e) { showLoginScreen(); }
+    } else { showLoginScreen(); }
+  } catch(e) { console.error('MSAL init error:', e); showLoginScreen(); }
+}
+
+async function signIn() {
+  try {
+    await msalInstance.loginRedirect({ scopes: SCOPES });
+  } catch(e) {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginError').textContent = 'Error al iniciar sesión: ' + e.message;
+  }
+}
+
+async function onLoginSuccess(authResult) {
+  accessToken = authResult.accessToken;
+  currentUser = {
+    email: authResult.account.username,
+    name: authResult.account.name || authResult.account.username
+  };
+  isDemo = false;
+  document.getElementById('modeIndicator').textContent = 'live';
+  document.getElementById('modeIndicator').className = 'mode-indicator mode-live';
+  showApp();
+  await loadAll();
+}
+
+function demoMode() {
+  isDemo = true;
+  currentUser = { email: 'admin@enaex.com', name: 'Administrador Demo' };
+  document.getElementById('modeIndicator').textContent = 'demo';
+  document.getElementById('modeIndicator').className = 'mode-indicator mode-demo';
+  showApp();
+  tasks = getDemoTasks();
+  logs = JSON.parse(localStorage.getItem('spence_logs_demo') || '[]');
+  updateBadges();
+  renderDashboard();
+  showToast('Modo demo — datos locales, no se sincronizan');
+}
+
+function signOut() {
+  if (msalInstance && !isDemo) {
+    msalInstance.logoutRedirect();
+  } else {
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+}
+
+function showLoginScreen() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'grid';
+  document.getElementById('userName').textContent = currentUser.name.split(' ').slice(0,2).join(' ');
+  document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('userRole').textContent = isDemo ? 'DEMO' : currentUser.email.split('@')[0].toUpperCase();
+  document.getElementById('sidebarDate').textContent = new Date().toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short'});
+}
 
 // ─── SHAREPOINT API ───────────────────────────────────────────────────────────
 async function spFetch(path, opts = {}) {
   const url = `${SITE_URL}/_api/${path}`;
-  const res = await fetch(url, {
-    ...opts,
-    credentials: 'include',
-    headers: {
-      'Accept': 'application/json;odata=verbose',
-      'Content-Type': 'application/json;odata=verbose',
-      ...(opts.headers || {})
-    }
-  });
-  if (!res.ok) throw new Error(`SP Error ${res.status}: ${await res.text()}`);
+  const headers = {
+    'Accept': 'application/json;odata=verbose',
+    'Content-Type': 'application/json;odata=verbose',
+    'Authorization': `Bearer ${accessToken}`,
+    ...(opts.headers || {})
+  };
+  const res = await fetch(url, { ...opts, headers });
+  if (!res.ok) throw new Error(`SP ${res.status}`);
+  if (res.status === 204) return {};
   return res.json();
 }
 
 async function getDigest() {
   const r = await spFetch('contextinfo', { method: 'POST' });
-  return r.d.GetContextWebInformation.FormDigestValue;
+  return r.d?.GetContextWebInformation?.FormDigestValue || '';
 }
 
-async function getListItems(listName) {
-  try {
-    const r = await spFetch(`lists/getbytitle('${listName}')/items?$top=500&$orderby=Created desc`);
-    return r.d.results || [];
-  } catch(e) { console.warn(`List ${listName} error:`, e); return []; }
+async function getItems(list) {
+  const r = await spFetch(`lists/getbytitle('${list}')/items?$top=500&$orderby=Created desc`);
+  return r.d?.results || [];
 }
 
-async function addListItem(listName, data) {
+async function addItem(list, data) {
   const digest = await getDigest();
-  const meta = await spFetch(`lists/getbytitle('${listName}')?$select=ListItemEntityTypeFullName`);
-  const type = meta.d.ListItemEntityTypeFullName;
-  return spFetch(`lists/getbytitle('${listName}')/items`, {
+  const meta = await spFetch(`lists/getbytitle('${list}')?$select=ListItemEntityTypeFullName`);
+  const type = meta.d?.ListItemEntityTypeFullName;
+  return spFetch(`lists/getbytitle('${list}')/items`, {
     method: 'POST',
     headers: { 'X-RequestDigest': digest },
     body: JSON.stringify({ __metadata: { type }, ...data })
   });
 }
 
-async function updateListItem(listName, id, data) {
+async function updateItem(list, id, data) {
   const digest = await getDigest();
-  const meta = await spFetch(`lists/getbytitle('${listName}')?$select=ListItemEntityTypeFullName`);
-  const type = meta.d.ListItemEntityTypeFullName;
-  return spFetch(`lists/getbytitle('${listName}')/items(${id})`, {
+  const meta = await spFetch(`lists/getbytitle('${list}')?$select=ListItemEntityTypeFullName`);
+  const type = meta.d?.ListItemEntityTypeFullName;
+  return spFetch(`lists/getbytitle('${list}')/items(${id})`, {
     method: 'POST',
-    headers: {
-      'X-RequestDigest': digest,
-      'X-HTTP-Method': 'MERGE',
-      'If-Match': '*'
-    },
+    headers: { 'X-RequestDigest': digest, 'X-HTTP-Method': 'MERGE', 'If-Match': '*' },
     body: JSON.stringify({ __metadata: { type }, ...data })
   });
 }
 
-// ─── CURRENT USER ─────────────────────────────────────────────────────────────
-async function getCurrentUser() {
-  try {
-    const r = await spFetch('web/currentuser');
-    return { email: r.d.Email, name: r.d.Title };
-  } catch(e) {
-    return { email: 'demo@enaex.com', name: 'Usuario Demo' };
-  }
-}
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-async function init() {
-  document.getElementById('sidebarDate').textContent =
-    new Date().toLocaleDateString('es-CL', {weekday:'short',day:'numeric',month:'short',year:'numeric'});
-
-  try {
-    currentUser = await getCurrentUser();
-    document.getElementById('userName').textContent = currentUser.name.split(' ')[0] + ' ' + (currentUser.name.split(' ')[1]||'');
-    document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-
-    await loadAll();
-    renderDashboard();
-
-    // Set user role display
-    const u = users.find(u => u.Title === currentUser.email || u.Email === currentUser.email);
-    document.getElementById('userRole').textContent = u ? (u.Role || 'usuario').toUpperCase() : 'USUARIO';
-
-  } catch(e) {
-    console.error('Init error:', e);
-    // Fallback to demo mode with localStorage
-    loadDemoMode();
-  }
-}
-
+// ─── LOAD DATA ────────────────────────────────────────────────────────────────
 async function loadAll() {
-  const [rawTasks, rawUsers, rawLogs] = await Promise.all([
-    getListItems('spence_tasks'),
-    getListItems('spence_users'),
-    getListItems('spence_task_log')
-  ]);
-
-  tasks = rawTasks.map(t => ({
-    id: t.ID, spId: t.ID,
-    title: t.Title || t.Titulo || '',
-    type: t.TaskType || 'puntual',
-    area: t.Area || 'op',
-    priority: t.Priority || 'media',
-    assignedTo: t.AssignedTo || '',
-    assignedFunction: t.AssignedFunction || '',
-    status: t.Status || 'pendiente',
-    dueDate: t.DueDate ? t.DueDate.slice(0,10) : '',
-    progress: t.Progress || 0,
-    notes: t.Notes || '',
-    escalatedTo: t.EscalatedTo || '',
-    externalOrg: t.ExternalOrg || '',
-    createdBy: t.CreatedBy || '',
-    createdAt: t.Created || ''
-  }));
-
-  users = rawUsers;
-
-  logs = rawLogs.map(l => ({
-    id: l.ID, taskId: l.TaskId,
-    userEmail: l.UserEmail || '', userName: l.UserName || '',
-    turno: l.Turno || '',
-    action: l.Action || 'comentario',
-    content: l.Content || '',
-    evidenceUrl: l.EvidenceUrl || '',
-    progressValue: l.ProgressValue || 0,
-    createdAt: l.Created || ''
-  }));
-
-  updateBadges();
+  setContent('<div class="loading"><div class="spinner"></div><span>Cargando desde SharePoint...</span></div>');
+  try {
+    const [rawT, rawL] = await Promise.all([getItems('spence_tasks'), getItems('spence_task_log')]);
+    tasks = rawT.map(t => ({
+      id: t.ID, spId: t.ID,
+      title: t.Title || '',
+      type: t.TaskType || 'puntual',
+      area: t.Area || 'op',
+      priority: t.Priority || 'media',
+      assignedTo: t.AssignedTo || '',
+      assignedFunction: t.AssignedFunction || '',
+      status: t.Status || 'pendiente',
+      dueDate: t.DueDate ? t.DueDate.slice(0,10) : '',
+      progress: t.Progress || 0,
+      notes: t.Notes || '',
+      escalatedTo: t.EscalatedTo || '',
+      externalOrg: t.ExternalOrg || '',
+      createdBy: t.CreatedBy || '',
+      createdAt: t.Created || ''
+    }));
+    logs = rawL.map(l => ({
+      id: l.ID, taskId: l.TaskId,
+      userEmail: l.UserEmail || '', userName: l.UserName || '',
+      turno: l.Turno || '', action: l.Action || 'comentario',
+      content: l.Content || '', evidenceUrl: l.EvidenceUrl || '',
+      progressValue: l.ProgressValue || 0, createdAt: l.Created || ''
+    }));
+    updateBadges();
+    renderDashboard();
+  } catch(e) {
+    console.error('Load error:', e);
+    showToast('Error al cargar datos de SharePoint');
+    tasks = getDemoTasks(); logs = [];
+    updateBadges(); renderDashboard();
+  }
 }
 
-function loadDemoMode() {
-  currentUser = { email: 'admin@enaex.com', name: 'Administrador Spence' };
-  document.getElementById('userName').textContent = 'Admin Spence';
-  document.getElementById('userAvatar').textContent = 'AS';
-  document.getElementById('userRole').textContent = 'ADMIN';
-
-  const saved = localStorage.getItem('spence_tasks_demo');
-  tasks = saved ? JSON.parse(saved) : getDemoTasks();
-  logs = JSON.parse(localStorage.getItem('spence_logs_demo') || '[]');
-  users = [];
-
-  showToast('Modo demo activo — los datos se guardan localmente');
-  updateBadges();
-  renderDashboard();
+function saveLocalFallback() {
+  if (isDemo) {
+    localStorage.setItem('spence_tasks_demo', JSON.stringify(tasks));
+    localStorage.setItem('spence_logs_demo', JSON.stringify(logs));
+  }
 }
 
 function getDemoTasks() {
+  const saved = localStorage.getItem('spence_tasks_demo');
+  if (saved) return JSON.parse(saved);
   return [
     {id:1,title:'Revisar contrato marco de servicio',type:'puntual',area:'cont',priority:'alta',assignedTo:'admin@enaex.com',status:'en_curso',dueDate:'2026-03-25',progress:40,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:2,title:'Verificar vigencia de licencias del personal',type:'continua',area:'lic',priority:'alta',assignedFunction:'administrativo',status:'pendiente',dueDate:'2026-03-20',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:3,title:'Actualizar KPI mensual consumo explosivos',type:'puntual',area:'kpi',priority:'media',assignedTo:'',status:'sin_asignar',dueDate:'2026-03-31',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:4,title:'Acreditación equipos perforadores',type:'continua',area:'acred',priority:'alta',assignedFunction:'administrativo',status:'atrasada',dueDate:'2026-03-18',progress:20,notes:'Pendiente desde semana anterior',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:5,title:'Coordinar programa voladuras semana 13',type:'turno',area:'op',priority:'media',assignedFunction:'supervisor',status:'en_curso',dueDate:'2026-03-22',progress:60,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:6,title:'Pago remuneraciones cierre mes',type:'continua',area:'rem',priority:'alta',assignedFunction:'administrativo',status:'pendiente',dueDate:'2026-03-28',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:7,title:'Autorización ingreso equipos a faena',type:'tercero',area:'coord',priority:'alta',externalOrg:'BHP Spence',status:'esperando_externo',dueDate:'2026-03-22',progress:0,notes:'Solicitud enviada por correo el 15/03',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:8,title:'Revisión protocolos SSO turno A y B',type:'turno',area:'seg',priority:'alta',assignedFunction:'hsec',status:'en_curso',dueDate:'2026-03-21',progress:50,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:9,title:'Informe avance mensual a gerencia',type:'puntual',area:'kpi',priority:'alta',assignedTo:'admin@enaex.com',status:'pendiente',dueDate:'2026-03-31',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
-    {id:10,title:'Inspección flota camiones turno',type:'turno',area:'mant',priority:'media',assignedFunction:'mantencion',status:'pendiente',dueDate:'2026-03-21',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
+    {id:2,title:'Verificar vigencia de licencias del personal',type:'continua',area:'lic',priority:'alta',assignedFunction:'administrativo',status:'pendiente',dueDate:'2026-03-30',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
+    {id:3,title:'Acreditación equipos perforadores',type:'continua',area:'acred',priority:'alta',assignedFunction:'administrativo',status:'atrasada',dueDate:'2026-03-18',progress:20,notes:'Pendiente desde semana anterior',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
+    {id:4,title:'Coordinar programa voladuras semana 13',type:'turno',area:'op',priority:'media',assignedFunction:'supervisor',status:'en_curso',dueDate:'2026-03-22',progress:60,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
+    {id:5,title:'Autorización ingreso equipos a faena',type:'tercero',area:'coord',priority:'alta',externalOrg:'BHP Spence',status:'esperando_externo',dueDate:'2026-03-22',progress:0,notes:'Solicitud enviada por correo',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
+    {id:6,title:'Informe avance mensual',type:'puntual',area:'kpi',priority:'alta',assignedTo:'',status:'sin_asignar',dueDate:'2026-03-31',progress:0,notes:'',createdBy:'admin@enaex.com',createdAt:new Date().toISOString()},
   ];
 }
 
-function saveDemo() {
-  localStorage.setItem('spence_tasks_demo', JSON.stringify(tasks));
-  localStorage.setItem('spence_logs_demo', JSON.stringify(logs));
-}
-
-// ─── STATUS HELPER ────────────────────────────────────────────────────────────
+// ─── STATUS ───────────────────────────────────────────────────────────────────
 function getStatus(t) {
   if (t.status === 'completada') return 'completada';
   if (t.status === 'escalada') return 'escalada';
   if (t.status === 'esperando_externo') return 'esperando_externo';
-  if (t.status === 'sin_asignar' || (!t.assignedTo && !t.assignedFunction)) return 'sin_asignar';
+  if (!t.assignedTo && !t.assignedFunction) return 'sin_asignar';
   if (t.dueDate && new Date(t.dueDate) < new Date(new Date().toDateString())) return 'atrasada';
   return t.status === 'en_curso' ? 'en_curso' : 'pendiente';
 }
 
 function updateBadges() {
-  document.getElementById('badge-sin').textContent = tasks.filter(t => getStatus(t) === 'sin_asignar').length;
-  document.getElementById('badge-ext').textContent = tasks.filter(t => t.type === 'tercero').length;
+  document.getElementById('badge-sin').textContent = tasks.filter(t=>getStatus(t)==='sin_asignar').length;
+  document.getElementById('badge-ext').textContent = tasks.filter(t=>t.type==='tercero').length;
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 function nav(view, el) {
-  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   if(el) el.classList.add('active');
   currentView = view;
-  const titles = {
-    dashboard:'Dashboard', sin_asignar:'Bandeja sin asignar',
-    mis_tareas:'Mis tareas', todas:'Todas las tareas',
-    equipo:'Equipo y turnos', traspaso:'Traspaso de turno', terceros:'Externos y terceros'
-  };
-  document.getElementById('topbarTitle').textContent = titles[view] || view;
+  const titles = {dashboard:'Dashboard',sin_asignar:'Bandeja sin asignar',mis_tareas:'Mis tareas',todas:'Todas las tareas',equipo:'Equipo y turnos',traspaso:'Traspaso de turno',terceros:'Externos y terceros'};
+  document.getElementById('topbarTitle').textContent = titles[view]||view;
   renderView(view);
 }
 
-function renderView(view) {
-  const views = {
-    dashboard: renderDashboard, sin_asignar: renderSinAsignar,
-    mis_tareas: renderMisTareas, todas: renderTodas,
-    equipo: renderEquipo, traspaso: renderTraspaso, terceros: renderTerceros
-  };
-  if (views[view]) views[view]();
+function renderView(v) {
+  ({dashboard:renderDashboard,sin_asignar:renderSinAsignar,mis_tareas:renderMisTareas,todas:renderTodas,equipo:renderEquipo,traspaso:renderTraspaso,terceros:renderTerceros})[v]?.();
 }
 
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+// ─── VIEWS ────────────────────────────────────────────────────────────────────
 function renderDashboard() {
-  const total = tasks.length;
-  const done = tasks.filter(t => getStatus(t) === 'completada').length;
-  const atr = tasks.filter(t => getStatus(t) === 'atrasada').length;
-  const curso = tasks.filter(t => getStatus(t) === 'en_curso').length;
-  const sinAsig = tasks.filter(t => getStatus(t) === 'sin_asignar').length;
-  const pct = total ? Math.round(done/total*100) : 0;
-
-  const akeys = Object.keys(AREAS);
-  const areaChart = akeys.map((a,i) => {
-    const tot = tasks.filter(t => t.area === a).length;
-    if (!tot) return '';
-    const comp = tasks.filter(t => t.area === a && getStatus(t) === 'completada').length;
-    const p = Math.round(comp/tot*100);
-    return `<div class="bar-row"><span class="bar-label">${AREAS[a][0]}</span><div class="bar-track"><div class="bar-fill" style="width:${p}%;background:${BARCOLORS[i%9]}"></div></div><span class="bar-pct">${p}%</span></div>`;
-  }).join('');
-
-  const alerts = tasks.filter(t => getStatus(t) === 'atrasada' || (t.priority === 'alta' && getStatus(t) !== 'completada'));
-  const alertHtml = alerts.length
-    ? alerts.slice(0,5).map(t => {
-        const s = getStatus(t);
-        const isAtr = s === 'atrasada';
-        return `<div class="alert-item" style="background:${isAtr?'#fce8e8':'#fef0d8'}">
-          <div class="alert-dot" style="background:${isAtr?'var(--red)':'var(--amber)'}"></div>
-          <div style="flex:1"><div style="font-size:12px;color:${isAtr?'var(--red)':'var(--amber)'};font-weight:500">${t.title}</div>
-          <div style="font-size:10px;color:var(--text3)">${t.assignedTo||t.assignedFunction||'Sin asignar'} · ${t.dueDate||'Sin fecha'}</div></div>
-        </div>`;
-      }).join('')
-    : '<div class="empty">Sin alertas activas</div>';
-
-  setContent(`
-    <div class="stats-grid">
-      <div class="stat"><div class="stat-label">Total tareas</div><div class="stat-value">${total}</div><div class="stat-sub">${sinAsig} sin asignar</div></div>
-      <div class="stat"><div class="stat-label">En curso</div><div class="stat-value" style="color:var(--blue)">${curso}</div><div class="stat-sub">${tasks.filter(t=>getStatus(t)==='pendiente').length} pendientes</div></div>
-      <div class="stat"><div class="stat-label">Atrasadas</div><div class="stat-value" style="color:var(--red)">${atr}</div><div class="stat-sub">${atr>0?'Requieren atención':'Sin atrasos'}</div></div>
-      <div class="stat"><div class="stat-label">Avance global</div><div class="stat-value" style="color:var(--green)">${pct}%</div><div class="stat-sub">${done} completadas</div></div>
-    </div>
-    <div class="two-col">
-      <div class="card"><div class="card-title">Avance por área</div>${areaChart||'<div class="empty">Sin datos</div>'}</div>
-      <div class="card"><div class="card-title">Alertas y prioridades</div>${alertHtml}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Tareas recientes</div>
-      <div class="task-list">${renderTaskCards(tasks.slice(0,5), false)}</div>
-    </div>
-  `);
+  const total=tasks.length, done=tasks.filter(t=>getStatus(t)==='completada').length;
+  const atr=tasks.filter(t=>getStatus(t)==='atrasada').length, curso=tasks.filter(t=>getStatus(t)==='en_curso').length;
+  const sinA=tasks.filter(t=>getStatus(t)==='sin_asignar').length, pct=total?Math.round(done/total*100):0;
+  const akeys=Object.keys(AREAS);
+  const areaChart=akeys.map((a,i)=>{const tot=tasks.filter(t=>t.area===a).length;if(!tot)return'';const comp=tasks.filter(t=>t.area===a&&getStatus(t)==='completada').length;const p=Math.round(comp/tot*100);return`<div class="bar-row"><span class="bar-label">${AREAS[a][0]}</span><div class="bar-track"><div class="bar-fill" style="width:${p}%;background:${BARCOLORS[i%9]}"></div></div><span class="bar-pct">${p}%</span></div>`;}).join('');
+  const alerts=tasks.filter(t=>getStatus(t)==='atrasada'||(t.priority==='alta'&&getStatus(t)!=='completada'));
+  const alertHtml=alerts.length?alerts.slice(0,5).map(t=>{const s=getStatus(t);const isA=s==='atrasada';return`<div class="alert-item" style="background:${isA?'#fce8e8':'#fef0d8'}"><div class="alert-dot" style="background:${isA?'var(--red)':'var(--amber)'}"></div><div style="flex:1"><div style="font-size:12px;color:${isA?'var(--red)':'var(--amber)'};font-weight:500">${t.title}</div><div style="font-size:10px;color:var(--text3)">${t.assignedTo||t.assignedFunction||'Sin asignar'} · ${t.dueDate||'S/F'}</div></div></div>`;}).join(''):'<div class="empty">Sin alertas activas</div>';
+  setContent(`<div class="stats-grid"><div class="stat"><div class="stat-label">Total tareas</div><div class="stat-value">${total}</div><div class="stat-sub">${sinA} sin asignar</div></div><div class="stat"><div class="stat-label">En curso</div><div class="stat-value" style="color:var(--blue)">${curso}</div><div class="stat-sub">${tasks.filter(t=>getStatus(t)==='pendiente').length} pendientes</div></div><div class="stat"><div class="stat-label">Atrasadas</div><div class="stat-value" style="color:var(--red)">${atr}</div><div class="stat-sub">${atr>0?'Requieren atención':'Sin atrasos'}</div></div><div class="stat"><div class="stat-label">Avance global</div><div class="stat-value" style="color:var(--green)">${pct}%</div><div class="stat-sub">${done} completadas</div></div></div><div class="two-col"><div class="card"><div class="card-title">Avance por área</div>${areaChart||'<div class="empty">Sin datos</div>'}</div><div class="card"><div class="card-title">Alertas y prioridades</div>${alertHtml}</div></div><div class="card"><div class="card-title">Tareas recientes</div><div class="task-list">${renderTaskCards(tasks.slice(0,6),false)}</div></div>`);
 }
 
-// ─── SIN ASIGNAR ──────────────────────────────────────────────────────────────
 function renderSinAsignar() {
-  const list = tasks.filter(t => getStatus(t) === 'sin_asignar');
-  setContent(`
-    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r)">
-      Estas tareas fueron creadas sin responsable asignado. Cualquier miembro del equipo puede tomarlas, o el Administrador puede asignarlas.
-    </div>
-    <div class="task-list">${list.length ? renderTaskCards(list) : '<div class="empty">No hay tareas sin asignar</div>'}</div>
-  `);
+  const list=tasks.filter(t=>getStatus(t)==='sin_asignar');
+  setContent(`<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r)">Tareas creadas sin responsable. Cualquier miembro puede tomarlas, o el Administrador puede asignarlas.</div><div class="task-list">${list.length?renderTaskCards(list):'<div class="empty">No hay tareas sin asignar</div>'}</div>`);
 }
 
-// ─── MIS TAREAS ───────────────────────────────────────────────────────────────
 function renderMisTareas() {
-  const email = currentUser?.email || '';
-  const list = tasks.filter(t => t.assignedTo === email || t.escalatedTo === email);
-  const fa = document.getElementById('filterAreaMis')?.value || '';
-  const fs = document.getElementById('filterStatusMis')?.value || '';
-  const filtered = list.filter(t => (!fa||t.area===fa) && (!fs||getStatus(t)===fs));
-  setContent(`
-    <div class="controls">
-      <select class="filter-select" id="filterAreaMis" onchange="renderMisTareas()">
-        <option value="">Todas las áreas</option>
-        ${Object.entries(AREAS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}
-      </select>
-      <select class="filter-select" id="filterStatusMis" onchange="renderMisTareas()">
-        <option value="">Todos los estados</option>
-        <option value="pendiente">Pendiente</option><option value="en_curso">En curso</option>
-        <option value="atrasada">Atrasada</option><option value="completada">Completada</option>
-      </select>
-    </div>
-    <div class="task-list">${filtered.length ? renderTaskCards(filtered) : '<div class="empty">No hay tareas asignadas a ti</div>'}</div>
-  `);
+  const list=tasks.filter(t=>t.assignedTo===currentUser?.email||t.escalatedTo===currentUser?.email);
+  setContent(`<div class="task-list">${list.length?renderTaskCards(list):'<div class="empty">No hay tareas asignadas a ti directamente</div>'}</div>`);
 }
 
-// ─── TODAS ────────────────────────────────────────────────────────────────────
 function renderTodas() {
-  const fa = document.getElementById('filterAreaAll')?.value || '';
-  const fs = document.getElementById('filterStatusAll')?.value || '';
-  const ft = document.getElementById('filterTypeAll')?.value || '';
-  const filtered = tasks.filter(t => (!fa||t.area===fa) && (!fs||getStatus(t)===fs) && (!ft||t.type===ft));
-  setContent(`
-    <div class="controls">
-      <select class="filter-select" id="filterAreaAll" onchange="renderTodas()">
-        <option value="">Todas las áreas</option>
-        ${Object.entries(AREAS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}
-      </select>
-      <select class="filter-select" id="filterStatusAll" onchange="renderTodas()">
-        <option value="">Todos los estados</option>
-        <option value="pendiente">Pendiente</option><option value="en_curso">En curso</option>
-        <option value="atrasada">Atrasada</option><option value="completada">Completada</option>
-        <option value="escalada">Escalada</option><option value="esperando_externo">Esperando externo</option>
-      </select>
-      <select class="filter-select" id="filterTypeAll" onchange="renderTodas()">
-        <option value="">Todos los tipos</option>
-        ${Object.entries(TYPE_LABELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
-      </select>
-      <span style="font-size:11px;color:var(--text2);margin-left:4px">${filtered.length} tarea(s)</span>
-    </div>
-    <div class="task-list">${filtered.length ? renderTaskCards(filtered) : '<div class="empty">No hay tareas con ese filtro</div>'}</div>
-  `);
+  const fa=document.getElementById('filterAreaAll')?.value||'';
+  const fs=document.getElementById('filterStatusAll')?.value||'';
+  const ft=document.getElementById('filterTypeAll')?.value||'';
+  const filtered=tasks.filter(t=>(!fa||t.area===fa)&&(!fs||getStatus(t)===fs)&&(!ft||t.type===ft));
+  setContent(`<div class="controls"><select class="filter-select" id="filterAreaAll" onchange="renderTodas()"><option value="">Todas las áreas</option>${Object.entries(AREAS).map(([k,v])=>`<option value="${k}"${fa===k?' selected':''}>${v[0]}</option>`).join('')}</select><select class="filter-select" id="filterStatusAll" onchange="renderTodas()"><option value="">Todos los estados</option><option value="pendiente"${fs==='pendiente'?' selected':''}>Pendiente</option><option value="en_curso"${fs==='en_curso'?' selected':''}>En curso</option><option value="atrasada"${fs==='atrasada'?' selected':''}>Atrasada</option><option value="completada"${fs==='completada'?' selected':''}>Completada</option><option value="escalada"${fs==='escalada'?' selected':''}>Escalada</option><option value="esperando_externo"${fs==='esperando_externo'?' selected':''}>Esp. externo</option></select><select class="filter-select" id="filterTypeAll" onchange="renderTodas()"><option value="">Todos los tipos</option>${Object.entries(TYPE_LABELS).map(([k,v])=>`<option value="${k}"${ft===k?' selected':''}>${v}</option>`).join('')}</select><span style="font-size:11px;color:var(--text2);margin-left:4px">${filtered.length} tarea(s)</span></div><div class="task-list">${filtered.length?renderTaskCards(filtered):'<div class="empty">Sin resultados</div>'}</div>`);
 }
 
-// ─── TERCEROS ─────────────────────────────────────────────────────────────────
 function renderTerceros() {
-  const list = tasks.filter(t => t.type === 'tercero');
-  setContent(`
-    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r)">
-      Tareas que dependen de una respuesta o acción de un tercero externo. Visibles para seguimiento — el cierre ocurre cuando el externo responde.
-    </div>
-    <div class="task-list">${list.length ? renderTaskCards(list) : '<div class="empty">No hay tareas de terceros</div>'}</div>
-  `);
+  const list=tasks.filter(t=>t.type==='tercero');
+  setContent(`<div style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r)">Tareas que dependen de un tercero externo. El cierre ocurre cuando el externo responde.</div><div class="task-list">${list.length?renderTaskCards(list):'<div class="empty">Sin tareas externas</div>'}</div>`);
 }
 
-// ─── EQUIPO ───────────────────────────────────────────────────────────────────
 function renderEquipo() {
-  const people = [...new Set(tasks.map(t => t.assignedTo).filter(Boolean))];
-  const funcs = [...new Set(tasks.map(t => t.assignedFunction).filter(Boolean))];
-
-  const personCards = people.map((p,i) => {
-    const mine = tasks.filter(t => t.assignedTo === p);
-    const done = mine.filter(t => getStatus(t) === 'completada').length;
-    const atr = mine.filter(t => getStatus(t) === 'atrasada').length;
-    const pct = mine.length ? Math.round(done/mine.length*100) : 0;
-    const init = p.split('@')[0].slice(0,2).toUpperCase();
-    const needsSupport = atr > 0 || mine.filter(t => t.priority === 'alta' && getStatus(t) !== 'completada').length > 1;
-    return `<div class="person-card">
-      <div class="person-row">
-        <div class="avatar" style="background:${AVATARBG[i%6]};color:${AVATARTX[i%6]}">${init}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:500">${p}</div>
-          <div style="font-size:11px;color:var(--text2)">${mine.length} tareas · ${done} completadas · ${pct}%${atr>0?` · <span style="color:var(--red)">${atr} atrasada(s)</span>`:''}</div>
-        </div>
-        ${needsSupport?`<span class="badge" style="background:#fef0d8;color:#7a4808">Requiere apoyo</span>`:''}
-      </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join('');
-
-  const funcCards = funcs.map((f,i) => {
-    const mine = tasks.filter(t => t.assignedFunction === f);
-    const atr = mine.filter(t => getStatus(t) === 'atrasada').length;
-    return `<div class="person-card">
-      <div class="person-row">
-        <div class="avatar" style="background:#e8e6e0;color:#3a3830">${f.slice(0,2).toUpperCase()}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:500">${f.charAt(0).toUpperCase()+f.slice(1)}</div>
-          <div style="font-size:11px;color:var(--text2)">${mine.length} tareas continuas${atr>0?` · <span style="color:var(--red)">${atr} atrasada(s)</span>`:''}</div>
-        </div>
-        <span class="badge type-continua">Función</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  setContent(`
-    <div style="font-size:13px;font-weight:500;margin-bottom:10px">Responsables directos</div>
-    ${personCards || '<div class="empty">Sin responsables directos asignados</div>'}
-    ${funcs.length ? `<div style="font-size:13px;font-weight:500;margin:14px 0 10px">Funciones (tareas continuas)</div>${funcCards}` : ''}
-  `);
+  const people=[...new Set(tasks.map(t=>t.assignedTo).filter(Boolean))];
+  const funcs=[...new Set(tasks.map(t=>t.assignedFunction).filter(Boolean))];
+  const pcards=people.map((p,i)=>{const mine=tasks.filter(t=>t.assignedTo===p);const done=mine.filter(t=>getStatus(t)==='completada').length;const atr=mine.filter(t=>getStatus(t)==='atrasada').length;const pct=mine.length?Math.round(done/mine.length*100):0;const init=p.split('@')[0].slice(0,2).toUpperCase();const ns=atr>0||mine.filter(t=>t.priority==='alta'&&getStatus(t)!=='completada').length>1;return`<div class="person-card"><div class="person-row"><div class="avatar" style="background:${AVATARBG[i%6]};color:${AVATARTX[i%6]}">${init}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${p}</div><div style="font-size:11px;color:var(--text2)">${mine.length} tareas · ${done} completadas · ${pct}%${atr>0?` · <span style="color:var(--red)">${atr} atrasada(s)</span>`:''}</div></div>${ns?`<span class="badge" style="background:#fef0d8;color:#7a4808">Apoyo</span>`:''}</div><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;}).join('');
+  const fcards=funcs.map((f,i)=>{const mine=tasks.filter(t=>t.assignedFunction===f);const atr=mine.filter(t=>getStatus(t)==='atrasada').length;return`<div class="person-card"><div class="person-row"><div class="avatar" style="background:#e8e6e0;color:#3a3830">${f.slice(0,2).toUpperCase()}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${f.charAt(0).toUpperCase()+f.slice(1)}</div><div style="font-size:11px;color:var(--text2)">${mine.length} tareas continuas${atr>0?` · <span style="color:var(--red)">${atr} atrasada(s)</span>`:''}</div></div><span class="badge type-continua">Función</span></div></div>`;}).join('');
+  setContent(`${people.length?`<div style="font-size:13px;font-weight:500;margin-bottom:10px">Responsables directos</div>${pcards}`:'<div class="empty">Sin responsables directos asignados</div>'}${funcs.length?`<div style="font-size:13px;font-weight:500;margin:14px 0 10px">Funciones (tareas continuas)</div>${fcards}`:''}`);
 }
 
-// ─── TRASPASO ─────────────────────────────────────────────────────────────────
 function renderTraspaso() {
-  const now = new Date();
-  const day = now.getDay();
-  const mon = new Date(now); mon.setDate(now.getDate()-(day===0?6:day-1));
-  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
-  const fmt = d => d.toLocaleDateString('es-CL',{day:'numeric',month:'short'});
-
-  const openTasks = tasks.filter(t => getStatus(t) !== 'completada');
-  const atr = openTasks.filter(t => getStatus(t) === 'atrasada');
-  const ext = openTasks.filter(t => t.type === 'tercero');
-  const sinA = openTasks.filter(t => getStatus(t) === 'sin_asignar');
-
-  setContent(`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-      <div>
-        <div style="font-size:15px;font-weight:500">Resumen de traspaso</div>
-        <div style="font-size:12px;color:var(--text2)">Semana ${fmt(mon)} – ${fmt(sun)}</div>
-      </div>
-      <button class="btn btn-dark" onclick="genReport('traspaso')">Generar resumen formal ↗</button>
-    </div>
-    <div class="stats-grid">
-      <div class="stat"><div class="stat-label">Tareas abiertas</div><div class="stat-value">${openTasks.length}</div></div>
-      <div class="stat"><div class="stat-label">Atrasadas</div><div class="stat-value" style="color:var(--red)">${atr.length}</div></div>
-      <div class="stat"><div class="stat-label">Esperando externo</div><div class="stat-value" style="color:var(--blue)">${ext.length}</div></div>
-      <div class="stat"><div class="stat-label">Sin asignar</div><div class="stat-value" style="color:var(--text2)">${sinA.length}</div></div>
-    </div>
-    ${atr.length ? `<div class="card" style="margin-bottom:12px;border-color:#f09595">
-      <div class="card-title" style="color:var(--red)">Atención inmediata — tareas atrasadas</div>
-      <div class="task-list">${renderTaskCards(atr, false)}</div>
-    </div>` : ''}
-    <div class="card">
-      <div class="card-title">Todas las tareas abiertas al momento del traspaso</div>
-      <div class="task-list">${renderTaskCards(openTasks.slice(0,15), false)}</div>
-    </div>
-  `);
+  const open=tasks.filter(t=>getStatus(t)!=='completada');
+  const atr=open.filter(t=>getStatus(t)==='atrasada');
+  const ext=open.filter(t=>t.type==='tercero');
+  const sinA=open.filter(t=>getStatus(t)==='sin_asignar');
+  const now=new Date(),day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));const sun=new Date(mon);sun.setDate(mon.getDate()+6);const fmt=d=>d.toLocaleDateString('es-CL',{day:'numeric',month:'short'});
+  setContent(`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px"><div><div style="font-size:15px;font-weight:500">Resumen de traspaso</div><div style="font-size:12px;color:var(--text2)">Semana ${fmt(mon)} – ${fmt(sun)}</div></div><button class="btn btn-dark" onclick="genReport('traspaso')">Generar resumen formal ↗</button></div><div class="stats-grid"><div class="stat"><div class="stat-label">Tareas abiertas</div><div class="stat-value">${open.length}</div></div><div class="stat"><div class="stat-label">Atrasadas</div><div class="stat-value" style="color:var(--red)">${atr.length}</div></div><div class="stat"><div class="stat-label">Esp. externo</div><div class="stat-value" style="color:var(--blue)">${ext.length}</div></div><div class="stat"><div class="stat-label">Sin asignar</div><div class="stat-value" style="color:var(--text2)">${sinA.length}</div></div></div>${atr.length?`<div class="card" style="margin-bottom:12px;border-color:#f09595"><div class="card-title" style="color:var(--red)">Atención inmediata</div><div class="task-list">${renderTaskCards(atr,false)}</div></div>`:''}<div class="card"><div class="card-title">Todas las tareas abiertas</div><div class="task-list">${renderTaskCards(open,false)}</div></div>`);
 }
 
-// ─── TASK CARD RENDERER ───────────────────────────────────────────────────────
-function renderTaskCards(list, clickable = true) {
-  if (!list.length) return '<div class="empty">Sin tareas</div>';
-  return list.map(t => {
-    const s = getStatus(t);
-    const scls = 'st-' + s.replace(' ','_');
-    const slabel = {pendiente:'Pendiente',en_curso:'En curso',atrasada:'Atrasada',completada:'Completada',escalada:'Escalada',esperando_externo:'Esp. externo',sin_asignar:'Sin asignar'}[s]||s;
-    const typeClass = 'type-'+(t.type||'puntual');
-    const typeLabel = TYPE_LABELS[t.type]||t.type;
-    const responsible = t.assignedTo || (t.assignedFunction ? `[${t.assignedFunction}]` : '—');
-    return `<div class="task-card ${t.type==='escalada'?'escalada':''} ${t.type==='sin_asignar'||s==='sin_asignar'?'sin_asignar':''} ${t.type==='tercero'?'tercero':''}" onclick="${clickable?`openDetail(${t.id})`:''}">
+// ─── TASK CARDS ───────────────────────────────────────────────────────────────
+function renderTaskCards(list, clickable=true) {
+  if(!list.length) return '<div class="empty">Sin tareas</div>';
+  return list.map(t=>{
+    const s=getStatus(t),scls='st-'+s;
+    const sl={pendiente:'Pendiente',en_curso:'En curso',atrasada:'Atrasada',completada:'Completada',escalada:'Escalada',esperando_externo:'Esp. externo',sin_asignar:'Sin asignar'}[s]||s;
+    const resp=t.assignedTo||(t.assignedFunction?`[${t.assignedFunction}]`:'—');
+    return`<div class="task-card ${t.type==='tercero'?'tercero':s==='sin_asignar'?'sin_asignar':''}" onclick="${clickable?`openDetail(${t.id})`:''}" style="${!clickable?'cursor:default':''}">
       <input type="checkbox" class="task-check" ${s==='completada'?'checked':''} onclick="event.stopPropagation();toggleDone(${t.id})" ${s==='completada'?'disabled':''}/>
       <div class="task-body">
         <div class="task-title ${s==='completada'?'done':''}">${t.title}</div>
@@ -860,303 +699,113 @@ function renderTaskCards(list, clickable = true) {
         <div class="task-meta">
           <span class="badge ${AREAS[t.area]?.[1]||''}">${AREAS[t.area]?.[0]||t.area}</span>
           <span class="badge ${PRIO[t.priority]?.[1]||''}">${PRIO[t.priority]?.[0]||t.priority}</span>
-          <span class="badge ${scls}">${slabel}</span>
-          <span class="badge ${typeClass}">${typeLabel}</span>
+          <span class="badge ${scls}">${sl}</span>
+          <span class="badge type-${t.type}">${TYPE_LABELS[t.type]||t.type}</span>
           ${t.dueDate?`<span style="font-size:9px;color:var(--text2);font-family:var(--mono)">· ${t.dueDate}</span>`:''}
-          <span style="font-size:9px;color:var(--text3)">· ${responsible}</span>
+          <span style="font-size:9px;color:var(--text3)">· ${resp}</span>
         </div>
         ${t.progress>0?`<div class="prog-bar" style="margin-top:5px"><div class="prog-fill" style="width:${t.progress}%"></div></div>`:''}
       </div>
-      <div class="task-actions">
-        <button class="icon-btn" onclick="event.stopPropagation();openDetail(${t.id})" title="Ver detalle">⋯</button>
-      </div>
+      <button class="icon-btn" onclick="event.stopPropagation();openDetail(${t.id})">⋯</button>
     </div>`;
   }).join('');
 }
 
-// ─── TASK DETAIL ──────────────────────────────────────────────────────────────
+// ─── DETAIL ───────────────────────────────────────────────────────────────────
 function openDetail(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  activeTaskId = id;
-
-  document.getElementById('detailTitle').textContent = t.title;
-
-  const s = getStatus(t);
-  const scls = 'st-' + s;
-  document.getElementById('detailBadges').innerHTML = `
-    <span class="badge ${AREAS[t.area]?.[1]||''}">${AREAS[t.area]?.[0]||t.area}</span>
-    <span class="badge ${PRIO[t.priority]?.[1]||''}">${PRIO[t.priority]?.[0]||t.priority}</span>
-    <span class="badge st-${s}">${s}</span>
-    <span class="badge type-${t.type}">${TYPE_LABELS[t.type]||t.type}</span>
-    ${t.dueDate?`<span style="font-size:10px;color:var(--text2);font-family:var(--mono)">${t.dueDate}</span>`:''}
-  `;
-
-  if (t.progress > 0) {
-    document.getElementById('detailProgress').style.display = 'block';
-    document.getElementById('detailPct').textContent = t.progress + '%';
-    document.getElementById('detailProgFill').style.width = t.progress + '%';
-  } else {
-    document.getElementById('detailProgress').style.display = 'none';
-  }
-
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  activeTaskId=id;
+  document.getElementById('detailTitle').textContent=t.title;
+  const s=getStatus(t);
+  document.getElementById('detailBadges').innerHTML=`<span class="badge ${AREAS[t.area]?.[1]||''}">${AREAS[t.area]?.[0]||t.area}</span><span class="badge ${PRIO[t.priority]?.[1]||''}">${PRIO[t.priority]?.[0]||t.priority}</span><span class="badge st-${s}">${s}</span><span class="badge type-${t.type}">${TYPE_LABELS[t.type]||t.type}</span>${t.dueDate?`<span style="font-size:10px;color:var(--text2);font-family:var(--mono)">${t.dueDate}</span>`:''}`;
+  if(t.progress>0){document.getElementById('detailProgress').style.display='block';document.getElementById('detailPct').textContent=t.progress+'%';document.getElementById('detailProgFill').style.width=t.progress+'%';}else{document.getElementById('detailProgress').style.display='none';}
   renderDetailLog(id);
   document.getElementById('detailModal').classList.add('open');
 }
 
 function renderDetailLog(taskId) {
-  const taskLogs = logs.filter(l => l.taskId == taskId).sort((a,b) => new Date(a.createdAt)-new Date(b.createdAt));
-  const el = document.getElementById('detailLog');
-  if (!taskLogs.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin acciones registradas aún</div>'; return; }
-  el.innerHTML = taskLogs.map(l => {
-    const init = (l.userName||l.userEmail||'?').slice(0,2).toUpperCase();
-    const actionLabels = {comentario:'Comentó',avance:'Actualizó avance',evidencia_link:'Agregó evidencia',escalamiento:'Escaló tarea',cierre:'Cerró tarea',reasignacion:'Reasignó'};
-    return `<div class="log-item">
-      <div class="log-avatar">${init}</div>
-      <div class="log-body">
-        <div class="log-author">${l.userName||l.userEmail}</div>
-        <div class="log-action">${actionLabels[l.action]||l.action}${l.content?`: ${l.content}`:''}</div>
-        ${l.evidenceUrl?`<div class="log-evidence" onclick="window.open('${l.evidenceUrl}','_blank')">Ver evidencia →</div>`:''}
-        ${l.progressValue?`<div style="font-size:10px;color:var(--blue)">Avance: ${l.progressValue}%</div>`:''}
-        <div class="log-time">${new Date(l.createdAt).toLocaleString('es-CL')} · Turno ${l.turno||'N/A'}</div>
-      </div>
-    </div>`;
-  }).join('');
-  el.scrollTop = el.scrollHeight;
+  const tl=logs.filter(l=>l.taskId==taskId).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  const el=document.getElementById('detailLog');
+  if(!tl.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin acciones registradas aún</div>';return;}
+  const labels={comentario:'Comentó',avance:'Actualizó avance',evidencia_link:'Agregó evidencia',escalamiento:'Escaló tarea',cierre:'Cerró tarea'};
+  el.innerHTML=tl.map(l=>`<div class="log-item"><div class="log-avatar">${(l.userName||l.userEmail||'?').slice(0,2).toUpperCase()}</div><div class="log-body"><div class="log-author">${l.userName||l.userEmail}</div><div class="log-action">${labels[l.action]||l.action}${l.content?': '+l.content:''}</div>${l.evidenceUrl?`<div class="log-evidence" onclick="window.open('${l.evidenceUrl}','_blank')">Ver evidencia →</div>`:''}${l.progressValue?`<div style="font-size:10px;color:var(--blue)">Avance: ${l.progressValue}%</div>`:''}<div class="log-time">${new Date(l.createdAt).toLocaleString('es-CL')} · T${l.turno||'?'}</div></div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
 }
 
-function closeDetail() {
-  document.getElementById('detailModal').classList.remove('open');
-  activeTaskId = null;
-  document.getElementById('logContent').value = '';
-  document.getElementById('logEvidence').value = '';
-  document.getElementById('logEscalateTo').value = '';
-  document.getElementById('logProgress').value = '';
-}
+function closeDetail(){document.getElementById('detailModal').classList.remove('open');activeTaskId=null;}
 
-document.getElementById('logAction').addEventListener('change', function() {
-  document.getElementById('logProgressGroup').style.display = this.value === 'avance' ? 'block' : 'none';
-  document.getElementById('logEvidenceGroup').style.display = this.value === 'evidencia_link' ? 'block' : 'none';
-  document.getElementById('logEscalateGroup').style.display = this.value === 'escalamiento' ? 'block' : 'none';
-});
+function onLogActionChange(){
+  const v=document.getElementById('logAction').value;
+  document.getElementById('logProgressGroup').style.display=v==='avance'?'block':'none';
+  document.getElementById('logEvidenceGroup').style.display=v==='evidencia_link'?'block':'none';
+  document.getElementById('logEscalateGroup').style.display=v==='escalamiento'?'block':'none';
+}
 
 async function saveLog() {
-  const t = tasks.find(x => x.id === activeTaskId);
-  if (!t) return;
-  const action = document.getElementById('logAction').value;
-  const content = document.getElementById('logContent').value.trim();
-  const evidenceUrl = document.getElementById('logEvidence').value.trim();
-  const escalateTo = document.getElementById('logEscalateTo').value.trim();
-  const progressVal = parseInt(document.getElementById('logProgress').value) || 0;
+  const t=tasks.find(x=>x.id===activeTaskId); if(!t) return;
+  const action=document.getElementById('logAction').value;
+  const content=document.getElementById('logContent').value.trim();
+  const evidenceUrl=document.getElementById('logEvidence').value.trim();
+  const escalateTo=document.getElementById('logEscalateTo').value.trim();
+  const progressVal=parseInt(document.getElementById('logProgress').value)||0;
+  if(!content&&action!=='cierre'){showToast('Agrega un comentario');return;}
 
-  if (!content && action !== 'cierre') { showToast('Agrega un comentario'); return; }
+  const entry={taskId:activeTaskId,userEmail:currentUser?.email||'',userName:currentUser?.name||'',turno:'N/A',action,content,evidenceUrl,progressValue:progressVal,createdAt:new Date().toISOString()};
 
-  const logEntry = {
-    taskId: activeTaskId,
-    userEmail: currentUser?.email || '',
-    userName: currentUser?.name || '',
-    turno: 'N/A',
-    action, content, evidenceUrl,
-    progressValue: progressVal,
-    createdAt: new Date().toISOString()
-  };
-
-  try {
-    await addListItem('spence_task_log', {
-      Title: `${action} - ${t.title}`,
-      TaskId: activeTaskId,
-      UserEmail: logEntry.userEmail,
-      UserName: logEntry.userName,
-      Turno: logEntry.turno,
-      Action: action,
-      Content: content,
-      EvidenceUrl: evidenceUrl,
-      ProgressValue: progressVal
-    });
-  } catch(e) {
-    // fallback demo
-    logEntry.id = Date.now();
-    logs.push(logEntry);
-    saveDemo();
+  if(!isDemo){
+    try{await addItem('spence_task_log',{Title:`${action}-${t.id}`,TaskId:activeTaskId,UserEmail:entry.userEmail,UserName:entry.userName,Turno:'N/A',Action:action,Content:content,EvidenceUrl:evidenceUrl,ProgressValue:progressVal});}
+    catch(e){showToast('Error al guardar en SharePoint');console.error(e);}
   }
 
-  // Update task status/progress
-  const updates = {};
-  if (action === 'cierre') { t.status = 'completada'; updates.Status = 'completada'; }
-  if (action === 'avance' && progressVal > 0) { t.progress = progressVal; updates.Progress = progressVal; t.status = 'en_curso'; updates.Status = 'en_curso'; }
-  if (action === 'escalamiento' && escalateTo) { t.status = 'escalada'; t.escalatedTo = escalateTo; updates.Status = 'escalada'; updates.EscalatedTo = escalateTo; }
-
-  if (Object.keys(updates).length && t.spId) {
-    try { await updateListItem('spence_tasks', t.spId, updates); } catch(e) {}
-  }
-
-  logs.push({...logEntry, id: Date.now()});
-  saveDemo();
-  renderDetailLog(activeTaskId);
-  updateBadges();
-  showToast('Acción registrada');
-  document.getElementById('logContent').value = '';
-  document.getElementById('logEvidence').value = '';
-  document.getElementById('logEscalateTo').value = '';
-  document.getElementById('logProgress').value = '';
-
-  if (action === 'cierre') { setTimeout(closeDetail, 800); renderView(currentView); }
+  entry.id=Date.now(); logs.push(entry);
+  const upd={};
+  if(action==='cierre'){t.status='completada';upd.Status='completada';}
+  if(action==='avance'&&progressVal>0){t.progress=progressVal;t.status='en_curso';upd.Progress=progressVal;upd.Status='en_curso';}
+  if(action==='escalamiento'&&escalateTo){t.status='escalada';t.escalatedTo=escalateTo;upd.Status='escalada';upd.EscalatedTo=escalateTo;}
+  if(Object.keys(upd).length&&t.spId&&!isDemo){try{await updateItem('spence_tasks',t.spId,upd);}catch(e){}}
+  saveLocalFallback(); renderDetailLog(activeTaskId); updateBadges(); showToast('Acción registrada');
+  ['logContent','logEvidence','logEscalateTo','logProgress'].forEach(id=>document.getElementById(id).value='');
+  if(action==='cierre'){setTimeout(closeDetail,800);renderView(currentView);}
 }
 
-// ─── TASK MODAL ───────────────────────────────────────────────────────────────
-function onTypeChange() {
-  const type = document.getElementById('fType').value;
-  document.getElementById('fAssignedGroup').style.display = ['puntual','escalada'].includes(type) ? 'block' : 'none';
-  document.getElementById('fFunctionGroup').style.display = ['continua','turno'].includes(type) ? 'block' : 'none';
-  document.getElementById('fExternalGroup').style.display = type === 'tercero' ? 'block' : 'none';
+// ─── TASK FORM ────────────────────────────────────────────────────────────────
+function onTypeChange(){const t=document.getElementById('fType').value;document.getElementById('fAssignedGroup').style.display=['puntual'].includes(t)?'block':'none';document.getElementById('fFunctionGroup').style.display=['continua','turno'].includes(t)?'block':'none';document.getElementById('fExternalGroup').style.display=t==='tercero'?'block':'none';}
+function openTaskModal(){document.getElementById('editTaskId').value='';document.getElementById('taskModalTitle').textContent='Nueva tarea';['fTitle','fAssigned','fNotes','fExternal'].forEach(f=>document.getElementById(f).value='');document.getElementById('fDate').value='';document.getElementById('fType').value='continua';document.getElementById('fPrio').value='media';onTypeChange();document.getElementById('taskModal').classList.add('open');}
+function closeTaskModal(){document.getElementById('taskModal').classList.remove('open');}
+
+async function saveTask(){
+  const title=document.getElementById('fTitle').value.trim();
+  if(!title){showToast('La descripción es obligatoria');return;}
+  const type=document.getElementById('fType').value;
+  const td={title,type,area:document.getElementById('fArea').value,priority:document.getElementById('fPrio').value,dueDate:document.getElementById('fDate').value,notes:document.getElementById('fNotes').value.trim(),assignedTo:document.getElementById('fAssigned').value.trim(),assignedFunction:document.getElementById('fFunction').value,externalOrg:document.getElementById('fExternal').value.trim(),status:type==='tercero'?'esperando_externo':'pendiente',progress:0,createdBy:currentUser?.email||'',createdAt:new Date().toISOString()};
+  if(!isDemo){
+    try{const r=await addItem('spence_tasks',{Title:title,TaskType:type,Area:td.area,Priority:td.priority,DueDate:td.dueDate||null,Notes:td.notes,AssignedTo:td.assignedTo,AssignedFunction:td.assignedFunction,ExternalOrg:td.externalOrg,Status:td.status,Progress:0,CreatedBy:td.createdBy});td.id=r.d?.ID||Date.now();td.spId=r.d?.ID;}
+    catch(e){td.id=Date.now();showToast('Guardado localmente — error SP');console.error(e);}
+  } else { td.id=Date.now(); }
+  tasks.unshift(td); saveLocalFallback(); updateBadges(); closeTaskModal(); showToast('Tarea guardada'); renderView(currentView);
 }
 
-function openTaskModal(id = null) {
-  document.getElementById('editTaskId').value = id || '';
-  document.getElementById('taskModalTitle').textContent = id ? 'Editar tarea' : 'Nueva tarea';
-  if (!id) {
-    ['fTitle','fAssigned','fNotes','fExternal'].forEach(f => document.getElementById(f).value = '');
-    document.getElementById('fDate').value = '';
-    document.getElementById('fType').value = 'continua';
-    document.getElementById('fPrio').value = 'media';
-    onTypeChange();
-  }
-  document.getElementById('taskModal').classList.add('open');
-}
-
-function closeTaskModal() { document.getElementById('taskModal').classList.remove('open'); }
-
-async function saveTask() {
-  const title = document.getElementById('fTitle').value.trim();
-  if (!title) { showToast('La descripción es obligatoria'); return; }
-
-  const type = document.getElementById('fType').value;
-  const taskData = {
-    title, type,
-    area: document.getElementById('fArea').value,
-    priority: document.getElementById('fPrio').value,
-    dueDate: document.getElementById('fDate').value,
-    notes: document.getElementById('fNotes').value.trim(),
-    assignedTo: document.getElementById('fAssigned').value.trim(),
-    assignedFunction: document.getElementById('fFunction').value,
-    externalOrg: document.getElementById('fExternal').value.trim(),
-    status: type === 'sin_asignar' ? 'sin_asignar' : type === 'tercero' ? 'esperando_externo' : 'pendiente',
-    progress: 0,
-    createdBy: currentUser?.email || '',
-    createdAt: new Date().toISOString()
-  };
-
-  try {
-    const r = await addListItem('spence_tasks', {
-      Title: title,
-      TaskType: type,
-      Area: taskData.area,
-      Priority: taskData.priority,
-      DueDate: taskData.dueDate || null,
-      Notes: taskData.notes,
-      AssignedTo: taskData.assignedTo,
-      AssignedFunction: taskData.assignedFunction,
-      ExternalOrg: taskData.externalOrg,
-      Status: taskData.status,
-      Progress: 0,
-      CreatedBy: taskData.createdBy
-    });
-    taskData.id = r.d?.ID || Date.now();
-    taskData.spId = r.d?.ID;
-  } catch(e) {
-    taskData.id = Date.now();
-    console.warn('SP save failed, using demo mode', e);
-  }
-
-  tasks.unshift(taskData);
-  saveDemo();
-  updateBadges();
-  closeTaskModal();
-  showToast('Tarea guardada');
-  renderView(currentView);
-}
-
-async function toggleDone(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  t.status = t.status === 'completada' ? 'pendiente' : 'completada';
-  if (t.spId) { try { await updateListItem('spence_tasks', t.spId, {Status: t.status}); } catch(e){} }
-  saveDemo();
-  updateBadges();
-  renderView(currentView);
-}
+async function toggleDone(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.status=t.status==='completada'?'pendiente':'completada';if(!isDemo&&t.spId){try{await updateItem('spence_tasks',t.spId,{Status:t.status});}catch(e){}}saveLocalFallback();updateBadges();renderView(currentView);}
 
 // ─── REPORTS ──────────────────────────────────────────────────────────────────
-function genReport(type) {
-  const today = new Date().toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
-  let title, sub, content;
-
-  if (type === 'gerencia') {
-    const total = tasks.length;
-    const done = tasks.filter(t=>getStatus(t)==='completada').length;
-    const atr = tasks.filter(t=>getStatus(t)==='atrasada').length;
-    const pct = total ? Math.round(done/total*100) : 0;
-    const akeys = Object.keys(AREAS);
-    const areaLines = akeys.map(a => {
-      const tot = tasks.filter(t=>t.area===a).length; if(!tot) return null;
-      const comp = tasks.filter(t=>t.area===a&&getStatus(t)==='completada').length;
-      return `  • ${AREAS[a][0]}: ${Math.round(comp/tot*100)}% (${comp}/${tot})`;
-    }).filter(Boolean).join('\n');
-    const alertas = tasks.filter(t=>getStatus(t)==='atrasada').map(t=>`  • [ATRASO] ${t.title} — Resp: ${t.assignedTo||t.assignedFunction||'N/A'} — Fecha: ${t.dueDate||'S/F'}`).join('\n');
-    title = 'Informe ejecutivo de avance'; sub = `Generado ${today}`;
-    content = `INFORME EJECUTIVO — CONTRATO SPENCE\nServicio de Tronadura · Enaex\nFecha: ${today}\n${'─'.repeat(48)}\n\nRESUMEN GENERAL\n• Total tareas: ${total}\n• Completadas: ${done} (${pct}%)\n• En ejecución: ${tasks.filter(t=>getStatus(t)==='en_curso').length}\n• Atrasadas: ${atr}\n• Sin asignar: ${tasks.filter(t=>getStatus(t)==='sin_asignar').length}\n\nAVANCE POR ÁREA\n${areaLines}\n\n${atr>0?`ALERTAS Y RIESGOS\n${alertas}\n\n`:''}${'─'.repeat(48)}\nDocumento generado — Dashboard Spence M1`;
-  }
-
-  else if (type === 'correos') {
-    const people = [...new Set(tasks.filter(t=>getStatus(t)!=='completada').map(t=>t.assignedTo).filter(Boolean))];
-    title = 'Correos de seguimiento'; sub = `${people.length} destinatario(s)`;
-    content = people.map(p => {
-      const mine = tasks.filter(t=>t.assignedTo===p&&getStatus(t)!=='completada');
-      const atr = mine.filter(t=>getStatus(t)==='atrasada');
-      return `── PARA: ${p} ${'─'.repeat(30)}\n\nAsunto: Seguimiento tareas — Contrato Spence\n\nEstimado/a ${p.split('@')[0]},\n\nTe escribo para hacer seguimiento de tus tareas en el contrato Spence.\n\n${atr.length?`TAREAS CON ATRASO:\n${atr.map(t=>`• ${t.title} — Vence: ${t.dueDate||'S/F'}`).join('\n')}\n\n`:''}TAREAS PENDIENTES:\n${mine.filter(t=>getStatus(t)!=='atrasada').map(t=>`• ${t.title} — Vence: ${t.dueDate||'S/F'}`).join('\n')}\n\nQuedo disponible ante cualquier consulta.\n\nSaludos,\nAdministrador Contrato Spence`;
-    }).join('\n\n' + '═'.repeat(48) + '\n\n');
-  }
-
-  else if (type === 'traspaso') {
-    const open = tasks.filter(t=>getStatus(t)!=='completada');
-    title = 'Resumen de traspaso de turno'; sub = today;
-    content = `TRASPASO DE TURNO — CONTRATO SPENCE\nFecha: ${today}\n${'─'.repeat(48)}\n\nTAREAS ABIERTAS AL CIERRE DE TURNO (${open.length})\n\n${open.map(t=>`[${getStatus(t).toUpperCase()}] ${t.title}\n  Área: ${AREAS[t.area]?.[0]||t.area} · Prioridad: ${t.priority} · Resp: ${t.assignedTo||t.assignedFunction||'Sin asignar'}\n  Fecha límite: ${t.dueDate||'Sin fecha'} · Avance: ${t.progress}%`).join('\n\n')}\n\n${'─'.repeat(48)}\nEl turno entrante debe revisar especialmente las tareas ATRASADAS y EN_CURSO.\nCualquier novedad debe registrarse en el sistema con comentario y evidencia.`;
-  }
-
-  document.getElementById('reportTitle').textContent = title;
-  document.getElementById('reportSub').textContent = sub;
-  document.getElementById('reportContent').textContent = content;
-  document.getElementById('reportModal').classList.add('open');
+function genReport(type){
+  const today=new Date().toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
+  let title,sub,content;
+  if(type==='gerencia'){const total=tasks.length,done=tasks.filter(t=>getStatus(t)==='completada').length,atr=tasks.filter(t=>getStatus(t)==='atrasada').length,pct=total?Math.round(done/total*100):0;const al=Object.keys(AREAS).map(a=>{const tot=tasks.filter(t=>t.area===a).length;if(!tot)return null;const comp=tasks.filter(t=>t.area===a&&getStatus(t)==='completada').length;return`  • ${AREAS[a][0]}: ${Math.round(comp/tot*100)}% (${comp}/${tot})`;}).filter(Boolean).join('\n');const atrl=tasks.filter(t=>getStatus(t)==='atrasada').map(t=>`  • [ATRASO] ${t.title} — ${t.assignedTo||t.assignedFunction||'N/A'} — ${t.dueDate||'S/F'}`).join('\n');title='Informe ejecutivo de avance';sub=`Generado ${today}`;content=`INFORME EJECUTIVO — CONTRATO SPENCE\nServicio de Tronadura · Enaex\nFecha: ${today}\n${'─'.repeat(48)}\n\nRESUMEN\n• Total: ${total} tareas · ${pct}% completado\n• En curso: ${tasks.filter(t=>getStatus(t)==='en_curso').length} · Atrasadas: ${atr} · Sin asignar: ${tasks.filter(t=>getStatus(t)==='sin_asignar').length}\n\nPOR ÁREA\n${al}\n\n${atr?`ALERTAS\n${atrl}\n\n`:''}${'─'.repeat(48)}\nGenerado desde Dashboard Spence M1`;}
+  else if(type==='correos'){const people=[...new Set(tasks.filter(t=>getStatus(t)!=='completada').map(t=>t.assignedTo).filter(Boolean))];title='Correos de seguimiento';sub=`${people.length} destinatario(s)`;content=people.map(p=>{const mine=tasks.filter(t=>t.assignedTo===p&&getStatus(t)!=='completada');const atr=mine.filter(t=>getStatus(t)==='atrasada');return`── PARA: ${p} ${'─'.repeat(30)}\nAsunto: Seguimiento tareas — Contrato Spence\n\nEstimado/a ${p.split('@')[0]},\n\n${atr.length?`TAREAS CON ATRASO:\n${atr.map(t=>`• ${t.title} — ${t.dueDate||'S/F'}`).join('\n')}\n\n`:''}PENDIENTES:\n${mine.filter(t=>getStatus(t)!=='atrasada').map(t=>`• ${t.title} — ${t.dueDate||'S/F'}`).join('\n')}\n\nSaludos,\nAdministrador Contrato Spence`;}).join('\n\n'+'═'.repeat(44)+'\n\n');}
+  else if(type==='traspaso'){const open=tasks.filter(t=>getStatus(t)!=='completada');title='Resumen traspaso de turno';sub=today;content=`TRASPASO DE TURNO — CONTRATO SPENCE\n${today}\n${'─'.repeat(48)}\n\nTAREAS ABIERTAS: ${open.length}\n\n${open.map(t=>`[${getStatus(t).toUpperCase()}] ${t.title}\n  ${AREAS[t.area]?.[0]} · ${t.priority} · ${t.assignedTo||t.assignedFunction||'Sin asignar'} · ${t.dueDate||'S/F'} · ${t.progress}%`).join('\n\n')}\n\n${'─'.repeat(48)}\nRevisa especialmente ATRASADAS y EN_CURSO.`;}
+  document.getElementById('reportTitle').textContent=title;document.getElementById('reportSub').textContent=sub;document.getElementById('reportContent').textContent=content;document.getElementById('reportModal').classList.add('open');
 }
+function closeReport(){document.getElementById('reportModal').classList.remove('open');}
+function copyReport(){navigator.clipboard.writeText(document.getElementById('reportContent').textContent).then(()=>showToast('Copiado al portapapeles'));}
 
-function closeReport() { document.getElementById('reportModal').classList.remove('open'); }
-function copyReport() {
-  navigator.clipboard.writeText(document.getElementById('reportContent').textContent).then(() => {
-    showToast('Copiado al portapapeles');
-  });
-}
+function exportCSV(){const h=['ID','Título','Tipo','Área','Prioridad','Responsable','Función','Estado','Fecha','Avance','Externo'];const r=tasks.map(t=>[t.id,`"${t.title}"`,t.type,AREAS[t.area]?.[0]||t.area,t.priority,t.assignedTo||'',t.assignedFunction||'',getStatus(t),t.dueDate||'',t.progress,t.externalOrg||'']);const csv=[h,...r].map(x=>x.join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='tareas_spence_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
 
-// ─── EXPORT CSV ───────────────────────────────────────────────────────────────
-function exportCSV() {
-  const headers = ['ID','Título','Tipo','Área','Prioridad','Responsable','Función','Estado','Fecha límite','Avance %','Externo','Notas'];
-  const rows = tasks.map(t => [t.id,`"${t.title}"`,t.type,AREAS[t.area]?.[0]||t.area,t.priority,t.assignedTo||'',t.assignedFunction||'',getStatus(t),t.dueDate||'',t.progress,t.externalOrg||'',`"${t.notes||''}"`]);
-  const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download = 'tareas_spence_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
-}
-
-// ─── UTILS ────────────────────────────────────────────────────────────────────
-function setContent(html) { document.getElementById('mainContent').innerHTML = html; }
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
+function setContent(html){document.getElementById('mainContent').innerHTML=html;}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ─── START ────────────────────────────────────────────────────────────────────
-init();
+initMSAL();
 </script>
 </body>
 </html>
