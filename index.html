@@ -378,4 +378,11 @@ function genRep(tp){
 function cpRep(){navigator.clipboard.writeText(document.getElementById('rCo').textContent).then(()=>shT('Copiado'));}
 function expCSV(){const h=['ID','Título','Tipo','Área','Prioridad','Responsable','Función','Estado','Fecha','Avance%'];const r=tasks.map(t=>[t.id,`"${t.title}"`,t.type,AR[t.area]?.[0]||t.area,t.priority,t.assignedTo||'',t.assignedFunction||'',gS(t),t.dueDate||'',t.progress]);const csv=[h,...r].map(x=>x.join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='tareas_spence_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
 function cM(id){document.getElementById(id).classList.remove('op');}
-function shT(m){const t=document.getElementById('tst');t.textContent=m;t
+function shT(m){const t=document.getElementById('tst');t.textContent=m;t.classList.add('sh');setTimeout(()=>t.classList.remove('sh'),2800);}
+
+const s=localStorage.getItem('sps');
+if(s){cu=JSON.parse(s);startApp();}
+else document.getElementById('LW').style.display='flex';
+</script>
+</body>
+</html>
