@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Gestión Spence — M1</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+<script>
+const bcrypt={
+  hash:async(pw,_)=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return'sha256:'+Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');},
+  compare:async(pw,h)=>{if(h.startsWith('sha256:')){return(await bcrypt.hash(pw,0))===h;}return false;}
+};
+</script>
 <style>
 :root{--bg:#f5f4f0;--sf:#fff;--sf2:#eeede8;--bd:#d8d6ce;--tx:#1a1a18;--tx2:#6b6a65;--tx3:#9e9d98;--ac:#c8430a;--bl:#1a4fa0;--gr:#1a6e3c;--am:#a06010;--rd:#a02020;--fn:'IBM Plex Sans',sans-serif;--mo:'IBM Plex Mono',monospace;--r:6px;--rl:10px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -124,7 +129,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh
     <div class="fg"><span class="fl">Contraseña</span><input class="fi" id="lPw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="btn bac bfl" onclick="doLogin()" id="lBt">Ingresar</button>
     <div class="ler" id="lEr"></div>
-    <div style="font-size:10px;color:var(--tx3);margin-top:16px;text-align:center;line-height:1.6">Primera vez: <strong>admin@enaex.com</strong> / <strong>Spence2026!</strong></div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:16px;text-align:center;line-height:1.6">Primera vez: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2342474e4a4d63464d42465b0d404c4e">[email&#160;protected]</a></strong> / <strong>Spence2026!</strong></div>
   </div>
 </div>
 
@@ -225,7 +230,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh
 
 <div class="tst" id="tst"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const SB='https://apozrzkopvcknfornkht.supabase.co',SK='sb_publishable_Lc_5xQzvPB6CI0hl3niK0A_4qrgDyc7';
 async function api(p,o={}){const r=await fetch(`${SB}/rest/v1/${p}`,{...o,headers:{'apikey':SK,'Authorization':`Bearer ${SK}`,'Content-Type':'application/json','Prefer':o.method==='POST'?'return=representation':'',...(o.headers||{})}});if(!r.ok)throw new Error(`${r.status}:${await r.text()}`);if(r.status===204)return[];return r.json();}
 const AR={op:['Operaciones','area-op'],cont:['Contractual','area-cont'],seg:['Seguridad','area-seg'],coord:['Coordinación','area-coord'],kpi:['KPI','area-kpi'],mant:['Mantención','area-mant'],rem:['Remuneraciones','area-rem'],acred:['Acreditaciones','area-acred'],lic:['Licencias','area-lic']};
@@ -373,11 +378,4 @@ function genRep(tp){
 function cpRep(){navigator.clipboard.writeText(document.getElementById('rCo').textContent).then(()=>shT('Copiado'));}
 function expCSV(){const h=['ID','Título','Tipo','Área','Prioridad','Responsable','Función','Estado','Fecha','Avance%'];const r=tasks.map(t=>[t.id,`"${t.title}"`,t.type,AR[t.area]?.[0]||t.area,t.priority,t.assignedTo||'',t.assignedFunction||'',gS(t),t.dueDate||'',t.progress]);const csv=[h,...r].map(x=>x.join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='tareas_spence_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
 function cM(id){document.getElementById(id).classList.remove('op');}
-function shT(m){const t=document.getElementById('tst');t.textContent=m;t.classList.add('sh');setTimeout(()=>t.classList.remove('sh'),2800);}
-
-const s=localStorage.getItem('sps');
-if(s){cu=JSON.parse(s);startApp();}
-else document.getElementById('LW').style.display='flex';
-</script>
-</body>
-</html>
+function shT(m){const t=document.getElementById('tst');t.textContent=m;t
