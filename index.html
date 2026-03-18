@@ -149,7 +149,7 @@ textarea.fi{resize:vertical;min-height:70px;line-height:1.5}
     <div class="fg"><span class="fl">Contraseña</span><input class="fi" id="lPw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="btn bac bfl" onclick="doLogin()" id="lBt">Ingresar</button>
     <div class="ler" id="lEr"></div>
-    <div style="font-size:10px;color:var(--tx3);margin-top:16px;text-align:center;line-height:1.6">Primera vez: <strong>admin@enaex.com</strong> / <strong>Spence2026!</strong></div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:16px;text-align:center;line-height:1.6">Primera vez: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="94f5f0f9fdfad4f1faf5f1ecbaf7fbf9">[email&#160;protected]</a></strong> / <strong>Spence2026!</strong></div>
   </div>
 </div>
 
@@ -275,7 +275,7 @@ textarea.fi{resize:vertical;min-height:70px;line-height:1.5}
 
 <div class="tst" id="tst"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const SB='https://apozrzkopvcknfornkht.supabase.co',SK='sb_publishable_Lc_5xQzvPB6CI0hl3niK0A_4qrgDyc7';
 const SB_STORAGE=`${SB}/storage/v1`;
 
@@ -292,7 +292,27 @@ async function uploadFile(file, path) {
     body: file
   });
   if(!r.ok) throw new Error('Upload failed: '+(await r.text()));
-  return `${SB_STORAGE}/object/public/spence-files/${path}`;
+  return 'storage:' + path;
+}
+
+async function getSignedUrl(p) {
+  const r = await fetch(SB_STORAGE+'/object/sign/spence-files/'+p, {
+    method:'POST',
+    headers:{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json'},
+    body:JSON.stringify({expiresIn:3600})
+  });
+  if(!r.ok) throw new Error('sign error');
+  const d = await r.json();
+  return SB_STORAGE + d.signedURL;
+}
+
+async function openAtt(raw) {
+  if(!raw) return;
+  try {
+    shT('Abriendo...');
+    const url = raw.startsWith('storage:') ? await getSignedUrl(raw.replace('storage:','')) : raw;
+    window.open(url,'_blank');
+  } catch(e) { shT('Error al abrir archivo'); console.error(e); }
 }
 
 const AR={op:['Operaciones','area-op'],cont:['Contractual','area-cont'],seg:['Seguridad','area-seg'],coord:['Coordinación','area-coord'],kpi:['KPI','area-kpi'],mant:['Mantención','area-mant'],rem:['Remuneraciones','area-rem'],acred:['Acreditaciones','area-acred'],lic:['Licencias','area-lic']};
@@ -584,7 +604,7 @@ function rDL(tid){
   const lb={comentario:'Comentó',avance:'Actualizó avance',adjunto:'Subió archivo',escalamiento:'Escaló',cierre:'Cerró tarea'};
   el.innerHTML=tl.length?tl.map(l=>{
     const isImg=l.evidenceUrl&&/\.(jpg|jpeg|png|gif|webp)/i.test(l.evidenceUrl);
-    const attHtml=l.evidenceUrl?`<div class="lat">📎 <a href="${l.evidenceUrl}" target="_blank">${l.content||'Ver archivo'}</a></div>`:'';
+    const attHtml=l.evidenceUrl?`<div class="lat">📎 <a href="#" onclick="event.preventDefault();openAtt('${l.evidenceUrl}')">${l.content||'Ver archivo'}</a></div>`:'';
     return`<div class="li"><div class="lav">${(l.userName||l.userEmail||'?').slice(0,2).toUpperCase()}</div><div class="lb"><div class="la">${l.userName||l.userEmail}</div><div class="lac">${lb[l.action]||l.action}${l.content&&l.action!=='adjunto'?': '+l.content:''}</div>${attHtml}${l.progressValue?`<div style="font-size:10px;color:var(--bl)">Avance: ${l.progressValue}%</div>`:''}<div class="lt">${new Date(l.createdAt).toLocaleString('es-CL')} · T${l.turno||'?'}</div></div></div>`;
   }).join(''):'<div style="font-size:12px;color:var(--tx3);padding:8px 0">Sin acciones registradas</div>';
   el.scrollTop=el.scrollHeight;
@@ -666,10 +686,4 @@ function cpRep(){navigator.clipboard.writeText(document.getElementById('rCo').te
 function cM(id){document.getElementById(id).classList.remove('op');}
 function shT(m){const t=document.getElementById('tst');t.textContent=m;t.classList.add('sh');setTimeout(()=>t.classList.remove('sh'),2800);}
 
-// ─── BOOT ─────────────────────────────────────────────────────────────────────
-const s=localStorage.getItem('sps');
-if(s){cu=JSON.parse(s);startApp();}
-else document.getElementById('LW').style.display='flex';
-</script>
-</body>
-</html>
+// ─── BOOT ─────────────────────────────────────────────
